@@ -1,0 +1,97 @@
+Steps to Demo HSRP in Packet Tracer
+Step 1: Set Up the Topology
+Open Packet Tracer and create a new project.
+
+Add Devices:
+Drag two routers (e.g., 2911), one switch (e.g., 2950), and one PC to the workspace.
+
+Optionally, add a third router (R3) for external connectivity.
+
+Connect Devices:
+Connect PC to Switch (e.g., FastEthernet0/1).
+
+Connect Switch to R1 (e.g., FastEthernet0/2 to R1’s GigabitEthernet0/0).
+
+Connect Switch to R2 (e.g., FastEthernet0/3 to R2’s GigabitEthernet0/0).
+
+(Optional) Connect R1 and R2 to R3 for external network testing.
+
+Configure Interfaces:
+PC: Set IP to 192.168.1.10, subnet mask 255.255.255.0, default gateway 192.168.1.254 (via Config > FastEthernet0 > IP Configuration).
+
+R1:
+bash
+
+configure terminal
+interface GigabitEthernet0/0
+ip address 192.168.1.1 255.255.255.0
+no shutdown
+exit
+
+R2:
+bash
+
+configure terminal
+interface GigabitEthernet0/0
+ip address 192.168.1.2 255.255.255.0
+no shutdown
+exit
+
+Step 2: Configure HSRP
+On R1 (Active Router):
+bash
+
+configure terminal
+interface GigabitEthernet0/0
+standby 1 ip 192.168.1.254
+standby 1 priority 110
+standby 1 preempt
+exit
+
+standby 1 ip: Sets the virtual IP for the HSRP group.
+
+priority 110: Makes R1 the active router (higher than default 100).
+
+preempt: Ensures R1 reclaims the active role when available.
+
+On R2 (Standby Router):
+bash
+
+configure terminal
+interface GigabitEthernet0/0
+standby 1 ip 192.168.1.254
+standby 1 priority 100
+standby 1 preempt
+exit
+
+(Optional) Add Authentication:
+On both routers:
+bash
+
+interface GigabitEthernet0/0
+standby 1 authentication md5 key-string mysecretkey
+
+Step 3: Verify HSRP
+Check HSRP Status:
+On R1: show standby
+Should show R1 as Active for group 1, virtual IP 192.168.1.254.
+
+On R2: show standby
+Should show R2 as Standby.
+
+Test Connectivity:
+Go to PC > Desktop > Command Prompt.
+
+Ping 192.168.1.254 to confirm the virtual IP is reachable.
+
+(Optional) If R3 is configured, ping an external IP (e.g., 10.0.0.1).
+
+Step 4: Demonstrate Failover
+Simulate R1 Failure:
+On R1: Shut down the interface.
+bash
+
+configure terminal
+interface GigabitEthernet0/0
+shutdown
+
