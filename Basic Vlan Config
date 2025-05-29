@@ -1,0 +1,60 @@
+Topology:
+1 Switch (Cisco 2960 or similar)
+
+3 PCs
+
+VLANs:
+
+VLAN 10 – Accounting
+
+VLAN 20 – HR
+
+⚙️ Step-by-Step Instructions:
+🔌 1. Basic Device Setup
+Connect PC0 and PC1 to Fa0/1 and Fa0/2
+
+Connect PC2 to Fa0/3
+
+Configure IP addresses:
+
+PC0 → 192.168.10.10 /24 (VLAN 10)
+
+PC1 → 192.168.10.11 /24 (VLAN 10)
+
+PC2 → 192.168.20.10 /24 (VLAN 20)
+
+🖥️ 2. Switch Configuration
+bash
+Copy code
+Switch> enable
+Switch# configure terminal
+
+# Create VLANs
+Switch(config)# vlan 10
+Switch(config-vlan)# name Accounting
+Switch(config-vlan)# exit
+
+Switch(config)# vlan 20
+Switch(config-vlan)# name HR
+Switch(config-vlan)# exit
+
+# Assign ports to VLANs
+Switch(config)# interface range fa0/1 - 2
+Switch(config-if-range)# switchport mode access
+Switch(config-if-range)# switchport access vlan 10
+Switch(config-if-range)# exit
+
+Switch(config)# interface fa0/3
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 20
+Switch(config-if)# exit
+🔁 3. Verify Configuration
+bash
+Copy code
+Switch# show vlan brief
+Switch# show running-config
+📡 4. Test Connectivity
+PC0 ↔ PC1 should ping successfully
+
+PC0 or PC1 ↔ PC2 should fail to ping (they’re on different VLANs)
+
