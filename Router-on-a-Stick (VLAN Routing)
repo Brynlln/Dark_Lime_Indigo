@@ -4,79 +4,54 @@ This lab mimics how VLANs in different subnets talk to each other—something yo
 🧰 Topology:
 1 Router
 
-1 Switch
+2 Switches
 
-2 PCs
+7 PCs
 
 VLANs:
 
-VLAN 10 – Accounting → 192.168.10.0/24
+VLAN 10 – 1.0.0.0/24
 
-VLAN 20 – HR → 192.168.20.0/24
+VLAN 20 – 2.0.0.0/24
 
-⚙️ Step-by-Step Lab Guide
-🔌 1. Wiring and IP Assignment
-Device	Port	IP Address	VLAN
-PC0	Fa0	192.168.10.10/24	10
-PC1	Fa0	192.168.20.10/24	20
-Router	G0/0	Trunk connection	N/A
+Switch 0 Config
+Interface Range f0/3-4
+switchport mode access
+switchport access vlan 20
+Interface range f0/1-2
+switchport mode access
+switchport access vlan 10
+Int g0/2
+switchport mode trunk
+switchport trunk allowed vlan 10,20
+switchport trunk native vlan 500
+int g0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,20
+switchport trunk native vlan 500
 
-🔧 2. Switch Configuration
-bash
-Copy
-Edit
-Switch> enable
-Switch# configure terminal
+Switch 1 Config
+interface range f0/1-2
+switchport mode access
+switchport access vlan 20
+interface f0/3
+switchport mode access
+switchport access vlan 10
+interface g0/2
+switchport mode trunk
+switchport trunk allowed vlan 10,20
+switchport trunk native vlan 500
 
-# VLAN Creation
-Switch(config)# vlan 10
-Switch(config-vlan)# name Accounting
-Switch(config-vlan)# exit
+Router 0 Config
+interface g0/0/1
+no shut
+int g0/0/1.10
+encapsulation dot1q 10
+ip address 1.0.0.254 255.255.255.0
+int g0/0/1.20
+encapsulation dot1q 20
+ip address 2.0.0.254 255.255.255.0
 
-Switch(config)# vlan 20
-Switch(config-vlan)# name HR
-Switch(config-vlan)# exit
 
-# Assign ports to VLANs
-Switch(config)# interface fa0/1
-Switch(config-if)# switchport mode access
-Switch(config-if)# switchport access vlan 10
-Switch(config-if)# exit
 
-Switch(config)# interface fa0/2
-Switch(config-if)# switchport mode access
-Switch(config-if)# switchport access vlan 20
-Switch(config-if)# exit
-
-# Configure trunk to router
-Switch(config)# interface fa0/24
-Switch(config-if)# switchport trunk encapsulation dot1q
-Switch(config-if)# switchport mode trunk
-Switch(config-if)# exit
-🖧 3. Router Configuration (Router-on-a-Stick)
-bash
-Copy
-Edit
-Router> enable
-Router# configure terminal
-
-# Subinterfaces for VLANs
-Router(config)# interface g0/0.10
-Router(config-subif)# encapsulation dot1Q 10
-Router(config-subif)# ip address 192.168.10.1 255.255.255.0
-Router(config-subif)# exit
-
-Router(config)# interface g0/0.20
-Router(config-subif)# encapsulation dot1Q 20
-Router(config-subif)# ip address 192.168.20.1 255.255.255.0
-Router(config-subif)# exit
-
-# Activate the physical interface
-Router(config)# interface g0/0
-Router(config-if)# no shutdown
-Router(config-if)# exit
-🧪 4. Test the Network
-PC0 should ping PC1 successfully.
-
-Both PCs should be able to ping their gateway (192.168.10.1 and 192.168.20.1).
 
